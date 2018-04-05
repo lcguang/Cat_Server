@@ -1,4 +1,5 @@
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.io.*;
 import java.lang.*;
@@ -12,8 +13,6 @@ import java.lang.*;
  * port number should be the second.
  */
 public class CatClient {
-    private final String hostName = "CatServer";
-
     public static void main(String args[]) throws IOException {
         if (args.length != 2) {
             System.out.println("Wrong number of arguments!");
@@ -27,30 +26,42 @@ public class CatClient {
         // Read all the lines and store them in an arraylist.
         Scanner fileScanner = new Scanner(new File(file));
         ArrayList<String> fileLines = new ArrayList<>();
+        System.out.println("Reading file...");
         while (fileScanner.hasNextLine()) {
             fileLines.add(fileScanner.nextLine().toUpperCase());
         }
+        System.out.println("Done.");
         fileScanner.close();
         int totalLines = fileLines.size();
 
+        String hostName = "0.0.0.0";
         try {
+            System.out.println("Connecting to server...");
             Socket clientSocket = new Socket(hostName, portNumber);
+            System.out.println("Client socket created.");
 
-            PrintWriter outMessage = new PrintWriter(clientMessage.getOutputStream(), true);
-            BufferReader inMessage = new BufferReader(new InputStreamReader(clientSocket.getInputStream()));
+            PrintWriter outMessage = new PrintWriter(clientSocket.getOutputStream(), true);
+            BufferedReader inMessage = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
             for (int t = 0; t < 10; t++) {
-                Thread.sleep(3000);
+                try {
+                    Thread.sleep(3000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
+                System.out.println("Sending message to Server...");
                 outMessage.println("LINE");
+                System.out.println("Done.");
                 String line = inMessage.readLine();
                 System.out.println(line);
 
                 int currentLine = 0;
-                while (currentLine++ < totalLines) {
-                    if (fileLines.get(i).equals(line)) {
+                while (currentLine < totalLines) {
+                    if (fileLines.get(currentLine).equals(line)) {
                         break;
                     }
+                    currentLine++;
                 }
                 if (currentLine == totalLines) {
                     System.out.println("MISSING");
@@ -61,7 +72,7 @@ public class CatClient {
 
             clientSocket.close();
         } catch (UnknownHostException e) {
-            System.err.println("Unknown host " + hostName);
+            System.out.println("Unknown host " + hostName);
             e.printStackTrace();
             System.exit(1);
         } catch (IOException e) {

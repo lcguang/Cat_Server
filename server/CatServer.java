@@ -1,5 +1,6 @@
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.InetAddress;
 import java.util.*;
 import java.io.*;
 import java.lang.*;
@@ -27,23 +28,37 @@ public class CatServer {
         // Read all the lines and store them in an arraylist.
         Scanner fileScanner = new Scanner(new File(file));
         ArrayList<String> fileLines = new ArrayList<>();
+        System.out.println("Reading file...");
         while (fileScanner.hasNextLine()) {
             fileLines.add(fileScanner.nextLine().toUpperCase());
         }
+        System.out.println("Done.");
         fileScanner.close();
         int currentLine = 0;
         int totalLines = fileLines.size();
 
         try {
             ServerSocket serverSocket = new ServerSocket(portNumber);
+            System.out.println("Server started.");
+            InetAddress serverAddress = serverSocket.getInetAddress();
+            System.out.println("Server host address: " + serverAddress.getHostName());
+
+            // TODO:
+            // Implement mulithreads server to handle requests from multiple clients.
             Socket clientSocket = serverSocket.accept();
 
-            PrintWriter outMessage = new PrintWriter(clientSocket.getOutputStream(), true);
-            BufferReader inMessage = new BufferReader(new InputStreamReader(clientSocket.getInputStream()));
-            if (inMessage.readLine().equals("LINE")) {
-                outMessage.println(fileLines.get(currentLine));
-                if (++currentLine == totalLines) {
-                    currentLine = 0;
+            // TODO:
+            // Check if a client socket is still connected.
+            while (true) {
+                PrintWriter outMessage = new PrintWriter(clientSocket.getOutputStream(), true);
+                BufferedReader inMessage = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                if (inMessage.readLine().equals("LINE")) {
+                    System.out.println("Responding to client's request...");
+                    outMessage.println(fileLines.get(currentLine));
+                    System.out.println("Done.");
+                    if (++currentLine == totalLines) {
+                        currentLine = 0;
+                    }
                 }
             }
         } catch (IOException e) {
