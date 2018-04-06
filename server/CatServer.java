@@ -43,23 +43,9 @@ public class CatServer {
             InetAddress serverAddress = serverSocket.getInetAddress();
             System.out.println("Server host address: " + serverAddress.getHostName());
 
-            // TODO:
-            // Implement mulithreads server to handle requests from multiple clients.
-            Socket clientSocket = serverSocket.accept();
-
-            // TODO:
-            // Check if a client socket is still connected.
             while (true) {
-                PrintWriter outMessage = new PrintWriter(clientSocket.getOutputStream(), true);
-                BufferedReader inMessage = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                if (inMessage.readLine().equals("LINE")) {
-                    System.out.println("Responding to client's request...");
-                    outMessage.println(fileLines.get(currentLine));
-                    System.out.println("Done.");
-                    if (++currentLine == totalLines) {
-                        currentLine = 0;
-                    }
-                }
+                Socket clientSocket = serverSocket.accept();
+                new Thread(new CatWorker(clientSocket, serverSocket, portNumber, fileLines)).start();
             }
         } catch (IOException e) {
             System.out.println("Exception was caught on port: " + portNumber);
